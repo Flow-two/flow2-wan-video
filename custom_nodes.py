@@ -651,20 +651,19 @@ class WanVideoSampler_F2:
         return (full_sigmas, high_sigmas, low_sigmas)
     
     def process(
-            self,
-            model,
-            seed,
-            sampler,
-            scheduler,
-            denoised_output,
-            vae_decode_type,
-            vae_tile_size,
-            preview_resolution,
-            unload_all_models,
-            start_image=None,
-            end_image=None,
-        ):
-
+    self,
+    model,
+    seed,
+    sampler,
+    scheduler,
+    denoised_output,
+    vae_decode_type,
+    vae_tile_size,
+    preview_resolution,
+    unload_all_models,
+    start_image=None,
+    end_image=None,
+    ):
         args = {
             "model": model,
             "seed": seed,
@@ -701,8 +700,7 @@ class WanVideoSampler_F2:
         args["fun_inpaint"] = fun_inpaint
 
         if image_to_video and config.extend_video_count > 1:
-
-            new_images = torch.empty(config.extend_video_count * 49, height, width, 3)
+            all_images = []
 
             images = None
             for i in range(config.extend_video_count):
@@ -711,11 +709,13 @@ class WanVideoSampler_F2:
                     args["end_image"] = None
 
                 images = self.sampling(**args)
-                new_images[i * 49:(i + 1) * 49] = images
+                all_images.append(images)
+
+            new_images = torch.cat(all_images, dim=0)
         else:
             new_images = self.sampling(**args)
-        
-        return (new_images, )
+
+        return (new_images,)
 
 
     def sampling(self, **kwargs):
